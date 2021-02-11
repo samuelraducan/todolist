@@ -48,6 +48,7 @@ const makeTaskElement = taskName => {
 // ====================================
 /* NOTE: Event Listeners */
 
+// Add a new todo
 todolist.addEventListener('submit', event => {
   event.preventDefault();
 
@@ -68,4 +69,18 @@ todolist.addEventListener('submit', event => {
 
   // Add the task into the DOM
   taskList.appendChild(taskElement);
+});
+
+// Delete a task/todo.
+todolist.addEventListener('click', event => {
+  if (!event.target.matches('.task__delete-button')) return;
+
+  // Get the parent element (li)
+  const taskElement = event.target.parentElement;
+  taskList.removeChild(taskElement);
+
+  // Triggers empty state.
+  if (taskList.children.length === 0) {
+    taskList.innerHTML = '';
+  }
 });
