@@ -25,6 +25,8 @@ const makeTaskElement = taskName => {
   const uniqueID = generateUniqueString(10);
   const taskElement = document.createElement('li');
   taskElement.classList.add('task');
+
+  taskElement.setAttribute('tabindex', -1);
   taskElement.innerHTML = DOMPurify.sanitize(`
 	<input type="checkbox" id="${uniqueID}" />
 	<label for="${uniqueID}">
@@ -43,6 +45,14 @@ const makeTaskElement = taskName => {
   `);
 
   return taskElement;
+};
+
+const isSuperKey = event => {
+  const os =
+    navigator.userAgent.includes('Mac OS X') !== -1 ? 'mac' : 'windows';
+  if (os === 'mac' && event.metaKey) return true;
+  if (os === 'windows' && event.ctrlKey) return true;
+  return false;
 };
 
 // ====================================
@@ -83,4 +93,67 @@ todolist.addEventListener('click', event => {
   if (taskList.children.length === 0) {
     taskList.innerHTML = '';
   }
+});
+
+// Up/down to select item
+document.addEventListener('keydown', event => {
+  const { key } = event;
+  if (key === 'ArrowUp' || key === 'ArrowDown') {
+    const tasks = [...taskList.children];
+    const firstTask = tasks[0];
+    const lastTask = tasks[tasks.length - 1];
+
+    // Select first or last task with arrow keys.
+    // Works when focus is not on the tasklist
+    if (!event.target.closest('.task')) {
+      if (key === 'ArrowUp') return lastTask.focus();
+      if (key === 'ArrowDown') return firstTask.focus();
+    }
+
+    // Selects previous/next element with arrow keys
+    // Does round robin
+    if (event.target.closest('.task')) {
+      const currentTaskElement = event.target.closest('.task');
+      if (currentTaskElement === firstTask && key === 'ArrowUp')
+        return lastTask.focus();
+      if (currentTaskElement === lastTask && key === 'ArrowDown')
+        return firstTask.focus();
+      if (key === 'ArrowUp')
+        return currentTaskElement.previousElementSibling.focus();
+      if (key === 'ArrowDown')
+        return currentTaskElement.nextElementSibling.focus();
+    }
+  }
+});
+
+// Super + Enter to check/uncheck task
+taskList.addEventListener('keydown', event => {
+  if (event.key === 'Enter' && isSuperKey(event)) {
+    const task = event.target.closest('.task');
+    const checkbox = task.querySelector('input[type="checkbox"]');
+    checkbox.click();
+  }
+});
+
+// Super + Backspace or delete to delete task
+taskList.addEventListener('keydown', event => {
+  const deleteTask = event => {
+    const task = event.target.closest('.task');
+    const deleteButton = task.querySelector('.task__delete-button');
+    deleteButton.click();
+  };
+
+  if (event.key === 'Backspace' && isSuperKey(event)) return deleteTask(event);
+  if (event.key === 'Delete') return deleteTask(event);
+});
+
+// // Press n to focus on task
+document.addEventListener('keydown', event => {
+  const key = event.key.toLowerCase();
+  if (key !== 'n') return;
+  if (event.target.matches('input[type="text"]')) return;
+  event.preventDefault();
+
+  const newTaskField = todolist.querySelector('input');
+  newTaskField.focus();
 });

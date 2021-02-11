@@ -194,6 +194,15 @@ button * {
   background-color: #fff;
 }
 
+.task:focus {
+  background-color: #fff;
+  outline: 4px solid var(--teal-100);
+}
+
+.task:focus-within {
+  background-color: #fff;
+}
+
 .task input[type='checkbox'] {
   position: absolute;
   opacity: 0;
